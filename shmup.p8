@@ -6,7 +6,7 @@ function _init()
 	bg=0
 	c=0	
 	player=playerinit(64,130,2,2,3,4,8)
-	bullet=bulletinit(-1,-1,16,17,7,0,7,5)
+	bullet={}
 	score=flr(rnd(3000))
 	lives=4
 	star=starinit()
@@ -24,8 +24,21 @@ function _update()
 	--game loop state--
 		
 		player=playerupdate(player)
-		bulletshoot(bullet,player)
-	
+		
+		if btnp(❎) then
+			local mybull={}
+			mybull=bulletinit(player.x,player.y,16,17,7,0,7,5)
+			sfx(mybull.sound)
+			add(bullet,mybull)
+		end		
+		
+		for i=#bullet, 1,-1 do 
+			bulletshoot(bullet[i],player)
+			if bullet[i].by<-8 then
+				del(bullet,bullet[i])
+			end
+		end			
+			
 	elseif mode=="end" then
 		c=0
 	--gameover screen state--
@@ -50,9 +63,11 @@ function _draw()
 	elseif mode=="play" then
 		bg=0
 		playerdraw(player)
-		bulletdraw(bullet,player)
+		for i=1,#bullet do
+			bulletdraw(bullet[i],player)
+		end
 		drawui(score,lives,player)
-	
+		print(#bullet)
 	elseif mode=="end" then
 		bg=8
 		enddraw()
@@ -162,19 +177,20 @@ end
 
 -->8
 function bulletinit(x,y,t,tf,sp,fx,fsz,ffx)
-	bullet={
-		bx=x,
-		by=y,
-		sprite=t,
-		fi=t,
-		ff=tf,
-		speed=sp,
-		sound=fx,
-		sflashsz=fsz,
-		flashsz=0,
-		flashx=ffx
-	}
-	return bullet
+	local bulletinit={}
+	
+	bulletinit.bx=x
+	bulletinit.by=y
+	bulletinit.sprite=t
+	bulletinit.fi=t
+	bulletinit.ff=tf
+	bulletinit.speed=sp
+	bulletinit.sound=fx
+	bulletinit.sflashsz=fsz
+	bulletinit.flashsz=fsz
+	bulletinit.flashx=ffx
+	
+	return bulletinit
 end
 
 function bulletshoot(b,p)
@@ -182,13 +198,13 @@ function bulletshoot(b,p)
 	b.flashsz-=1
 	b.by-=b.speed
 	
-	if btnp(❎) then
-		b.bx=p.x
-		b.by=p.y
-		sfx(0)
-		b.flashsz=b.sflashsz
-		b.sprite=b.fi
-	end
+	--if btnp(❎) then
+		--b.bx=p.x
+		--b.by=p.y
+		--sfx(0)
+		--b.flashsz=b.sflashsz
+		--b.sprite=b.fi
+	--end
 	
 	if b.flashsz<-1 then
 		b.flashsz=-1
@@ -198,7 +214,7 @@ function bulletshoot(b,p)
 		b.sprite=b.ff
 	end	
 		
-	return b
+	--return b
 end
 
 function bulletdraw(b,p)
