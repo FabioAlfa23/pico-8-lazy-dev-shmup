@@ -13,6 +13,7 @@ function _init()
 	star=starinit()
 	mode="start"
 	cd=5
+	cdb=0.25
 end 
 
 
@@ -22,17 +23,25 @@ function _update()
 	if mode=="start" then
 	--start screen state--
 		startupdate()
-		player=playerinit(64,130,2,2,3,4,8,0.5)
+		player=playerinit(64,130,2,2,4,4,8,0.5)
 		elseif mode=="play" then
 	--game loop state--
 		player=playerupdate(player)
 		
-		if btnp(❎) then
+		if btnp(❎) and cdb<0 then
 			local mybull={}
-			mybull=bulletinit(player.x,player.y,16,17,7,0,7,5)
+			mybull=bulletinit(player.x,player.y,16,17,7,0,7,5,0.25)
 			sfx(mybull.sound)
 			add(bullet,mybull)
+			cdb=mybull.cd
 		end		
+		
+		cdb-=0.03
+		
+		if cdb<-1 then
+			cdb=(-1)
+		end
+		
 		
 		if #enemy<5 and cd>1.5 then
 			local	addnem={} 
@@ -85,7 +94,7 @@ function _draw()
 		for i=1,#bullet do
 			bulletdraw(bullet[i],player)
 		end
-		drawui(score,lives,player)
+		drawui(score,lives,player,cdb)
 		rectfill(0,127,128,128,8)
 		for dnem in all(enemy) do
 			enemydraw(dnem)
@@ -195,7 +204,7 @@ function playercollidey(p)
 	return flg 
 end
 
-function drawui(sc,lives,p)
+function drawui(sc,lives,p,bcd)
 	for i=0,lives-1 do
 		if i<p.hp then
 			spr(14,(i*9)+1,1)
@@ -203,12 +212,14 @@ function drawui(sc,lives,p)
 			spr(15,(i*9)+1,1)
 		end
 	end
-	print("score: "..flr(p.score),45,1,12)
+	rectfill(89,1,126*-bcd,8,11)
+	rect(89,1,126,8,7)
+	print("score: "..flr(p.score),45,2,12)
 end
 
 
 -->8
-function bulletinit(x,y,t,tf,sp,fx,fsz,ffx)
+function bulletinit(x,y,t,tf,sp,fx,fsz,ffx,cd)
 	local bulletinit={}
 	
 	bulletinit.bx=x
@@ -221,6 +232,7 @@ function bulletinit(x,y,t,tf,sp,fx,fsz,ffx)
 	bulletinit.sflashsz=fsz
 	bulletinit.flashsz=fsz
 	bulletinit.flashx=ffx
+	bulletinit.cd=cd
 	
 	return bulletinit
 end
@@ -245,7 +257,8 @@ function bulletshoot(b,p)
 	if b.sprite>b.ff then
 		b.sprite=b.ff
 	end	
-		
+	
+	--b.cd-=0.03	
 	--return b
 end
 
